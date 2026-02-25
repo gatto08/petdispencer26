@@ -22,7 +22,17 @@
         </div>
     </div>
     <div class="button">
-        <input type="button" value="AVVIO" id="avvio">
+        <input onclick="eroga();" type="button" value="AVVIO" id="avvio">
     </div>
+    <script>
+        function eroga() {
+            xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://192.168.43.185/eroga' );
+            xhr.onload = function() {
+                console.log(xhr.response);
+            };
+            xhr.send();
+        }
+    </script>
 </body>
 </html>
