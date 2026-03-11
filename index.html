@@ -33,6 +33,14 @@
             };
             xhr.send();
         }
+          function readswitch() {
+            xhr = new XMLHttpRequest();
+            xhr.open('GET', 'http://192.168.43.185/switch' );
+            xhr.onload = function() {
+                console.log(xhr.response);
+            };
+            xhr.send();
+        }
     </script>
 </body>
 </html>
