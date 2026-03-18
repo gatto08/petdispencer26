@@ -25,9 +25,53 @@
         </div>
     </div>
     <div class="button">
-        <input onclick="alert('TO DO');" type="button" value="AVVIO" id="avvio">
+        <input onclick="switchMode()" type="button" value="MANUAL" id="mode">
     </div>
     <script>
+        const URL = 'http://192.168.43.185/';
+        function ajax(method, api, callback) {
+            let xhr = new XMLHttpRequest();
+            xhr.open(method, URL+api );
+            xhr.onload = ()=>callback(xhr.response);
+            xhr.send();
+        }
+
+        let timerId;
+        function startReadSwitches() {
+            timerId = setInterval(() => {
+                readswitch();
+            }, 1000);
+        }
+        function stopReadSwitches() {
+            clearInterval(timerId);
+        }
+        function setMode(mode) {
+            switch (mode) {
+                case 'MANUAL':
+                    erogazione.disabled=true;
+                    quantita.disabled=true;
+                    periodo.disabled=true;
+                    setManual();
+                    startReadSwitches();
+                    break;
+                case 'REMOTE':
+                    erogazione.disabled=false;
+                    quantita.disabled=false;
+                    periodo.disabled=false;
+                    setRemote();
+                    stopReadSwitches();
+                    break;
+            }
+        }
+        function switchMode() {
+            if (mode.value=='MANUAL') {
+                mode.value='REMOTE';
+                setMode('REMOTE');
+            } else if (mode.value=='REMOTE') {
+                mode.value='MANUAL';
+                setMode('MANUAL');
+            }
+        }
         // in ore
         const s1vals = {
             '0': 1, '1':3, '2':6, '3':12, '4':24
@@ -83,6 +127,28 @@
             pel.innerHTML = vals[el.value];
             //console.log(vals);
         }
+
+        function readMode(callback) {
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', URL+'mode' );
+            xhr.onload = function() {
+                callback(xhr.response);
+            };
+            xhr.send();
+        }
+        function setManual() {
+            ajax('GET', 'manual', (response)=>{
+                console.log(response)
+            });
+        }
+        function setRemote() {
+            ajax('GET', 'remote', (response)=>{
+                console.log(response)
+            });
+        }
+
+
+
         erogazione.addEventListener('change', (e) => {
             console.log(e);
             updateSwitchVals(e.target);
@@ -99,9 +165,8 @@
         updateSwitchVals(quantita);
         updateSwitchVals(periodo);
 
-        setInterval(() => {
-            readswitch();
-        }, 1000);
+        readMode((mode)=>setMode('MANUAL'));
+        
     </script>
 </body>
 </html>
