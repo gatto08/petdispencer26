@@ -24,6 +24,11 @@
             <input min="0" max="4" type="range" name="" id="periodo">
             <p id="periodo_val"></p>
         </div>
+        <div class="slider">
+            <input type="button" value="SET" id="btn_setswitch" onclick="setAjaxSwitch()">
+        </div>
+    </div>
+    <div id="nextdis">
     </div>
     <div id="actualmode">
     </div>
@@ -57,10 +62,25 @@
             timerId=undefined
         }
 
+        let timerNextDistribution=undefined
+        function startDistribution() {
+            if (timerNextDistribution!==undefined) {
+                console.log("timerNextDistribution already in use");
+                return;
+            }
+            timerNextDistribution = setInterval(() => {
+                getNextDistribution();
+            }, 1000);
+        }
+        function stopDistribution() {
+            clearInterval(timerNextDistribution);
+            timerNextDistribution=undefined
+        }
+
         function setMode(newmode) {
             switch (newmode) {
                 case MANUALMODE:
-                    //setAjaxManual();
+                    setAjaxManual();
                     console.log("Setting manual mode");
                     erogazione.disabled=true;
                     quantita.disabled=true;
@@ -68,6 +88,8 @@
                     actualmode.innerHTML="Modalità MANUALE";
                     console.log("Start read switch");
                     startReadSwitches();
+                    startDistribution();
+                    btn_setswitch.hidden=true;
                     break;
                 case REMOTEMODE:
                     setAjaxRemote();
@@ -76,8 +98,13 @@
                     quantita.disabled=false;
                     periodo.disabled=false;
                     actualmode.innerHTML="Modalità REMOTA";
+                    console.log("Start Distribution");
+                    startDistribution();
                     console.log("Stop read switch");
                     stopReadSwitches();
+                    //stopDistribution();
+                    setSwitch()
+                    btn_setswitch.hidden=true;
                     break;
                 default:
                     alert("Error on setMode");
@@ -112,13 +139,19 @@
             'quantita': s2vals,
             'periodo': s3vals
         }
-        function eroga() {
+        /*function eroga() {
             xhr = new XMLHttpRequest();
             xhr.open('GET', 'http://192.168.43.185/eroga' );
             xhr.onload = function() {
                 console.log(xhr.response);
             };
             xhr.send();
+        }*/
+
+        function setAjaxSwitch() {
+            ajax('POST', 'setswitch', (response)=>{
+                console.log(response);
+            });
         }
         
         function readswitch() {
@@ -200,6 +233,14 @@
 
         function stopAll() {
             stopReadSwitches();
+        }
+
+        function getNextDistribution() {
+            ajax('GET', 'nextdis', (response)=>{
+                //console.log(response);
+                val = JSON.parse(response);
+                nextdis.innerHTML = "Prossima erogazione: "+val+"s";
+            });
         }
     </script>
 </body>
